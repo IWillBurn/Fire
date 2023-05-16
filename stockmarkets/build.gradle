@@ -9,16 +9,19 @@ group = 'com.project'
 version = 'main'
 sourceCompatibility = '17'
 
-mainClassName = 'com.fire.security.SecurityApplication'
+mainClassName = 'com.fire.security.StockMarketsApplication'
 
 repositories {
 	mavenCentral()
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
 	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
