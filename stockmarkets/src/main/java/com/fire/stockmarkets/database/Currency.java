@@ -18,4 +18,14 @@ public class Currency {
 
     @Column(name = "icon")
     private String icon;
+
+    public Currency(String _currency, String _icon){
+        currency = _currency;
+        icon = _icon;
+    }
+
+    public Currency(){
+        currency = "";
+        icon = "";
+    }
 }

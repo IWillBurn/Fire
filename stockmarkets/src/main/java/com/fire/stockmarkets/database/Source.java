@@ -1,5 +1,7 @@
 package com.fire.stockmarkets.database;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,30 +15,25 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @Entity
-@Table(name = "markets")
-public class Market {
+@Table(name = "sources")
+public class Source {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long Id;
 
-    @Column(name = "stock_market")
-    private String stockMarket;
+    @Column(name = "source")
+    private String source;
 
-    @Column(name = "country")
-    private String country;
-
-    @ManyToOne(optional = false)
-    private Currency currency;
-
-    @ManyToMany(mappedBy = "markets")
+    @ManyToMany(mappedBy = "sources")
     private List<Company> companies;
-    public Market(String _stockMarket, String _country){
-        stockMarket = _stockMarket;
-        country = _country;
+
+    public Source(String _source) {
+        source = _source;
         companies = new ArrayList<>();
     }
-    public Market(){
+
+    public Source() {
         companies = new ArrayList<>();
     }
 }

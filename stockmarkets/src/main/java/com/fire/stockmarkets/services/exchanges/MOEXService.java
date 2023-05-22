@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fire.stockmarkets.dto.api.components.CompanyData;
 import com.fire.stockmarkets.dto.api.components.CurrencyData;
 import com.fire.stockmarkets.dto.api.components.StockMarketData;
-import com.fire.stockmarkets.dto.api.components.ValueData;
-import com.fire.stockmarkets.dto.api.responses.StockDailyData;
+import com.fire.stockmarkets.dto.api.components.DataField;
+import com.fire.stockmarkets.dto.api.responses.StockData;
 import com.fire.stockmarkets.dto.moex.MOEXCompanyData;
 import com.fire.stockmarkets.dto.moex.MOEXSecuritiesHistory;
 import com.fire.stockmarkets.services.CurrencyService;
@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,14 +37,14 @@ public class MOEXService {
     @Value("${moex-protocol}")
     private String protocol;
 
-    public StockDailyData getStockDailyData(String symbol, Long timeoutInSeconds) throws JsonProcessingException {
+    public StockData getStockDailyData(String symbol, Long timeoutInSeconds) throws JsonProcessingException {
         MOEXCompanyData infoData = getCompanyAndBoardData(symbol, timeoutInSeconds);
         String primaryBoard = findValueByTag(infoData.getBoards().getData(), 14, "1", 1);
         StockMarketData stockMarketData = StockMarketService.getStockMarketData("RUS", "MOEX");
         CompanyData companyData = getCompanyData(infoData);
         CurrencyData currencyData = CurrencyService.getRubleData();
-        List<ValueData> valueDataList = getStockHistory(symbol, primaryBoard, timeoutInSeconds);
-        return new StockDailyData(stockMarketData, companyData, currencyData, valueDataList);
+        List<DataField> dataFieldList = getStockHistory(symbol, primaryBoard, timeoutInSeconds);
+        return new StockData(stockMarketData, companyData, currencyData, dataFieldList);
     }
 
     public MOEXCompanyData getCompanyAndBoardData(String symbol, Long timeoutInSeconds) throws JsonProcessingException{
@@ -64,21 +65,22 @@ public class MOEXService {
         return companyData;
     }
 
-    public List<ValueData> getStockHistory(String symbol, String board, Long timeoutInSeconds) throws JsonProcessingException {
+    public List<DataField> getStockHistory(String symbol, String board, Long timeoutInSeconds) throws JsonProcessingException {
         RestTemplate restTemplate = restTemplateBuilder.setConnectTimeout(Duration.ofSeconds(timeoutInSeconds)).setReadTimeout(Duration.ofSeconds(timeoutInSeconds)).build();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         String url = "https://" + host + "/" + protocol;
 
-        String request = url + "/history/engines/stock/markets/shares/boards/"+ board + "/securities/" + symbol + ".json?from=" + DateService.currentDate(3);
+        String request = url + "/history/engines/stock/markets/shares/boards/"+ board + "/securities/" + symbol + ".json?from=" + DateService.currentDateWithDelta(3);
         MOEXSecuritiesHistory response = restTemplate.getForObject(request, MOEXSecuritiesHistory.class);
 
-        List<ValueData> valueDataList = new ArrayList<>();
+        List<DataField> dataFieldList = new ArrayList<>();
+
         for (List<String> field: response.getHistory().getData()){
-            valueDataList.add(new ValueData(field.get(1), field.get(6), field.get(7), field.get(8), field.get(10)));
+            dataFieldList.add(new DataField(Timestamp.valueOf(field.get(1)).getTime(), Float.valueOf(field.get(6)), Float.valueOf(field.get(7)), Float.valueOf(field.get(8)), Float.valueOf(field.get(10))));
         }
-        return valueDataList;
+        return dataFieldList;
     }
 
     public String findValueByTag(List<List<String>> data, Integer tagPosition, String tag, Integer valuePosition){

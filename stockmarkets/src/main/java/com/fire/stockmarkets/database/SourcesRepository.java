@@ -6,10 +6,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
 @Repository
-public interface MarketsRepository extends JpaRepository<Market, Long> {
-    @Transactional
-    @Query(value = "SELECT * FROM markets AS m WHERE m.stock_market = ?1", nativeQuery = true)
-    Market findByName(String name);
+public interface SourcesRepository extends JpaRepository<Source, Long> {
+    @Query(value = "SELECT * FROM sources AS s WHERE s.source = ?1", nativeQuery = true)
+    Source findBySource(String source);
 }
