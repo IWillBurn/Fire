@@ -9,7 +9,7 @@ group = 'com.project'
 version = 'main'
 sourceCompatibility = '17'
 
-mainClassName = 'com.fire.security.SecurityApplication'
+mainClassName = 'com.fire.security.SocialApplication'
 
 repositories {
 	mavenCentral()

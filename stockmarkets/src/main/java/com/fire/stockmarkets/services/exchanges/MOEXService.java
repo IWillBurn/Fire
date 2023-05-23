@@ -1,6 +1,8 @@
 package com.fire.stockmarkets.services.exchanges;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fire.stockmarkets.database.CurrenciesRepository;
+import com.fire.stockmarkets.database.Currency;
 import com.fire.stockmarkets.dto.api.components.CompanyData;
 import com.fire.stockmarkets.dto.api.components.CurrencyData;
 import com.fire.stockmarkets.dto.api.components.StockMarketData;
@@ -8,9 +10,7 @@ import com.fire.stockmarkets.dto.api.components.DataField;
 import com.fire.stockmarkets.dto.api.responses.StockData;
 import com.fire.stockmarkets.dto.moex.MOEXCompanyData;
 import com.fire.stockmarkets.dto.moex.MOEXSecuritiesHistory;
-import com.fire.stockmarkets.services.CurrencyService;
 import com.fire.stockmarkets.services.DateService;
-import com.fire.stockmarkets.services.StockMarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -31,6 +31,9 @@ public class MOEXService {
     @Autowired
     RestTemplateBuilder restTemplateBuilder;
 
+    @Autowired
+    CurrenciesRepository currenciesRepository;
+
     @Value("${moex-host}")
     private String host;
 
@@ -40,9 +43,10 @@ public class MOEXService {
     public StockData getStockDailyData(String symbol, Long timeoutInSeconds) throws JsonProcessingException {
         MOEXCompanyData infoData = getCompanyAndBoardData(symbol, timeoutInSeconds);
         String primaryBoard = findValueByTag(infoData.getBoards().getData(), 14, "1", 1);
-        StockMarketData stockMarketData = StockMarketService.getStockMarketData("RUS", "MOEX");
+        StockMarketData stockMarketData = new StockMarketData("RUS", "MOEX");
         CompanyData companyData = getCompanyData(infoData);
-        CurrencyData currencyData = CurrencyService.getRubleData();
+        Currency currency = currenciesRepository.findByName("RUB");
+        CurrencyData currencyData = new CurrencyData(currency.getCurrency(), currency.getIcon()) ;
         List<DataField> dataFieldList = getStockHistory(symbol, primaryBoard, timeoutInSeconds);
         return new StockData(stockMarketData, companyData, currencyData, dataFieldList);
     }

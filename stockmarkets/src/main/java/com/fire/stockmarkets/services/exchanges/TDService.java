@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class TDService implements StockMarketDataService{
+public class TDService{
 
     @Autowired
     SendingService sendingService;
@@ -41,9 +41,6 @@ public class TDService implements StockMarketDataService{
     Source source;
     @Value("${td-host}")
     private String host;
-
-    @Value("${td-api-key}")
-    private String apiKey;
 
     public void initService(){
         if (sourcesRepository.findBySource(sourceName) == null) {
@@ -175,7 +172,6 @@ public class TDService implements StockMarketDataService{
         return null;
     }
 
-    @Override
     public Float getCurrentData(String symbol, Market market) {
         if (haveStock(symbol)) {
             List<String> ways = new ArrayList<>();
@@ -212,23 +208,7 @@ public class TDService implements StockMarketDataService{
         }
     }
 
-    @Override
     public Boolean haveStock(String symbol) {
         return ExchangesService.haveSource(companiesRepository.findBySymbol(symbol).getSources(), sourceName);
-    }
-
-    @Override
-    public CompanyData getCompanyData(String symbol) {
-        return null;
-    }
-
-    @Override
-    public List<DataField> getDailyData(String symbol, Long count) {
-        return null;
-    }
-
-    @Override
-    public List<DataField> getHourData(String symbol, Long count) {
-        return null;
     }
 }

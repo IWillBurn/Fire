@@ -134,6 +134,7 @@ public class DataService {
         Currency currency = currenciesRepository.findByName(currencyName);
         List<Market> markets = company.getMarkets();
 
+        List<MarketWithCurrentData> marketsWithoutData = new ArrayList<>();
         List<MarketWithCurrentData> marketsWithData = new ArrayList<>();
 
         Float maxValue = -1000000000f;
@@ -148,14 +149,20 @@ public class DataService {
                 exchangedValue = value * exchange;
                 if (exchangedValue > maxValue) { maxValue = exchangedValue; }
                 if (exchangedValue < minValue) { minValue = exchangedValue; }
+                marketsWithData.add(new MarketWithCurrentData(new StockMarketData(market.getCountry(), market.getStockMarket()), new CurrencyData(mainCurrency.getCurrency(), mainCurrency.getIcon()), value, exchangedValue));
             }
-            marketsWithData.add(new MarketWithCurrentData(new StockMarketData(market.getCountry(), market.getStockMarket()), new CurrencyData(mainCurrency.getCurrency(), mainCurrency.getIcon()), value, exchangedValue));
+            else{
+                marketsWithoutData.add(new MarketWithCurrentData(new StockMarketData(market.getCountry(), market.getStockMarket()), new CurrencyData(mainCurrency.getCurrency(), mainCurrency.getIcon()), value, exchangedValue));
+            }
         }
         if (maxValue == -1000000000d){
             maxValue = null;
         }
         if (minValue == 1000000000d){
             minValue = null;
+        }
+        for (MarketWithCurrentData market : marketsWithoutData){
+            marketsWithData.add(market);
         }
         return new StockMetaResult(company.getSymbol(), company.getName(), company.getDescription(), new CurrencyData(currency.getCurrency(), currency.getIcon()), new CurrentMinMaxDataField(minValue, maxValue), marketsWithData);
     }
